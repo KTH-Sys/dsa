@@ -1,19 +1,28 @@
-def binary_search(list, item):
-  low = 0
-  high = len(list) -1
+from typing import List
 
-  while low <= high:
-    mid = (low + high) // 2
-    guess = list[mid]
-    if guess == item:
-      return mid
-    elif guess > item:
-      high = mid - 1
-    else:
-      low = mid + 1
-  return None
+class Solution:
+    def search(self, nums: List[int], target: int) -> int:
+        """
+        Perform binary search to find target in sorted nums.
+        Returns index of target if found, else -1.
+        Time Complexity: O(log n)
+        Space Complexity: O(1)
+        """
+        low, high = 0, len(nums) - 1   # search boundaries
 
-arr = [1, 3, 5, 7, 9]
+        while low <= high:             # loop until search window collapses
+            mid = (low + high) // 2    # midpoint index
+            guess = nums[mid]          # value at midpoint
 
-print(binary_search(arr, 3))
-print(binary_search(arr, -1))
+            if guess == target:        # found target
+                return mid
+            elif guess > target:       # target is in left half
+                high = mid - 1
+            else:                      # target is in right half
+                low = mid + 1
+
+        return -1   # target not found
+
+s = Solution()
+print(s.search([-1,0,3,5,9,12], 9))   # Output: 4
+print(s.search([-1,0,3,5,9,12], 2))   # Output: -1
