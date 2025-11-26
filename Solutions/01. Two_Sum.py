@@ -41,6 +41,7 @@ class Solution:
 
             # Otherwise, store the current number and its index in the hash map.
             # This will let us find it quickly later if its complement appears.
+            # prevMap = { n: i }
             prevMap[n] = i
 
 nums = [2, 7, 11, 15]
