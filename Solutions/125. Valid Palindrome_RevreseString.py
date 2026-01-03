@@ -52,3 +52,4 @@ class Solution:
         # This solution is straightforward and correct.
         # Optimization (if needed): build characters in a list, then ''.join(...)
         # to avoid repeated string concatenation overhead.
+  
