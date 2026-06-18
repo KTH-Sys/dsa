@@ -7,49 +7,53 @@ class Solution:
         ----------------
         Determine whether s and t are anagrams:
         same multiset of characters (same letters with same counts), order irrelevant.
+        Constraint assumed: both strings contain only lowercase English letters (a-z).
 
         M — Match
         ----------------
-        Pattern: Arrays & Hashing (frequency counting).
-        Tool: Two hash maps (dicts) mapping char -> count.
+        Pattern: Arrays & Hashing (frequency counting), optimized with a fixed-size array.
+        Tool: Single array of size 26 acting as a combined counter for both strings.
 
         P — Plan
         ----------------
         1) If lengths differ, return False.
-        2) Build counts for s and t in one pass (two dicts).
-        3) Return whether the two dicts are equal.
+        2) Walk both strings by index, incrementing the count for s[i] and
+           decrementing the count for t[i] in the same array slot.
+        3) Scan the array — if any slot is nonzero, the strings aren't anagrams.
+           If every slot is 0, they are.
         """
-
         # I — Implement
         # ----------------
         # 1) Early length check (O(1))
         if len(s) != len(t):
             return False
 
-        # 2) Build frequency maps
-        countS = {}
-        countT = {}
+        # 2) Single array tracks net frequency difference per letter
+        count = [0] * 26
 
-        # One pass through both strings (O(n))
+        # One pass through both strings by index (O(n))
         for i in range(len(s)):
-            # Increment count for s[i]
-            countS[s[i]] = 1 + countS.get(s[i], 0)
-            # Increment count for t[i]
-            countT[t[i]] = 1 + countT.get(t[i], 0)
+            # Increment for s's character
+            count[ord(s[i]) - ord('a')] += 1
+            # Decrement for t's character
+            count[ord(t[i]) - ord('a')] -= 1
 
-        # 3) Compare maps (O(1) under lowercase-letters constraint)
-        result = (countS == countT)
+        # 3) Check that every letter's net count balanced out to zero
+        for n in count:
+            if n != 0:
+                return False
+        return True
 
         # R — Review
         # ----------------
         # Correctness reasoning:
-        # - For each character, its count in s must equal its count in t.
-        # - Dict equality checks exactly that.
-        # - Length mismatch short-circuits obvious non-anagrams.
+        # - Each letter has one slot; +1 for appearing in s, -1 for appearing in t.
+        # - If s and t are anagrams, every letter's contributions cancel to 0.
+        # - If any letter's count is nonzero, s and t disagree on that letter's frequency.
+        # - Length mismatch short-circuits obvious non-anagrams before the scan.
 
         # E — Evaluate
         # ----------------
-        # Time:  O(n)  (single pass + constant-time map compare over <=26 letters)
-        # Space: O(1)  (at most 26 lowercase letters in each dict)
-        return result
+        # Time:  O(n)  (single pass to build counts + O(26) pass to verify, n = len(s))
+        # Space: O(1)  (fixed 26-element array, independent of input size)
         
