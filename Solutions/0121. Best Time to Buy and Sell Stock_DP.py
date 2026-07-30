@@ -1,61 +1,68 @@
-from typing import List
-
 class Solution:
     def maxProfit(self, prices: List[int]) -> int:
         """
         U — Understand
         ----------------
-        Given an array prices where prices[i] is the price on day i,
-        choose one day to buy and a later day to sell.
-        Return the maximum profit possible. If no profit is possible, return 0.
+        Given an array where prices[i] is the stock price on day i, find
+        the maximum profit from buying on one day and selling on a LATER
+        day (must buy before you sell). If no profit is possible, return 0.
 
         M — Match
         ----------------
-        Pattern: One-pass / Greedy (also interpretable as Sliding Window)
-        Idea:
-        - Track the minimum price seen so far (best buy point)
-        - For each day as a potential sell day, compute profit = sell - minBuy
-        - Keep the maximum profit across all days
+        Pattern: Single-pass running minimum (a simplified two-pointer
+        idea). Instead of tracking pointer POSITIONS for buy/sell days,
+        just carry forward the LOWEST price value seen so far — the
+        problem only asks for the profit amount, not which specific days
+        achieved it, so the day index itself is unnecessary state.
 
         P — Plan
         ----------------
-        1) Initialize minBuy as the first day's price
-        2) Initialize maxPro = 0 (best profit so far)
-        3) Iterate through prices as "sell" price:
-           - Update maxPro using sell - minBuy
-           - Update minBuy if current sell price is a new minimum
-        4) Return maxPro
-
-        I — Implement
-        ----------------
+        1) Start minPrice at the first day's price (the only candidate
+           buy day known so far) and maxProfit at 0.
+        2) For each day's price:
+           - Compute the profit if selling TODAY, using the lowest price
+             seen up through YESTERDAY (today hasn't updated minPrice yet).
+           - Update maxProfit if this profit beats the current best.
+           - THEN update minPrice if today's price is a new low, making
+             it available as a buy day for future iterations.
+        3) Return maxProfit after scanning every day.
         """
-
-        # Minimum price observed so far (best day to buy up to current day)
-        minBuy = prices[0]
-
-        # Maximum profit observed so far
-        maxPro = 0
-
-        # Treat each price as a potential sell price
-        for sell in prices:
-            # If we sold today, profit would be today's price - best buy so far
-            maxPro = max(maxPro, sell - minBuy)
-
-            # Update best buy price if today's price is lower
-            minBuy = min(minBuy, sell)
-
-        # E — Evaluate
+        # I — Implement
         # ----------------
-        # Time Complexity: O(n)
-        #   - Single pass through prices
-        # Space Complexity: O(1)
-        #   - Only two variables (minBuy, maxPro)
+        maxProfit = 0
+        minPrice = prices[0]
+
+        for price in prices:
+            # Profit if we sold today, having bought at the lowest price
+            # seen so far (does NOT yet include today as a buy candidate)
+            profit = price - minPrice
+            maxProfit = max(maxProfit, profit)
+
+            # Now let today's price become the new low, if it is one —
+            # done AFTER the profit check, so today can't be used as
+            # both its own buy and sell day
+            minPrice = min(minPrice, price)
+
+        return maxProfit
 
         # R — Review
         # ----------------
-        # Correctness intuition:
-        # - For each day, the best profit selling today is achieved by buying at
-        #   the lowest price seen before (or on) today.
-        # - We keep updating that minimum and track the best profit over all days.
+        # Correctness reasoning:
+        # - minPrice always holds the lowest price encountered up to and
+        #   including the current day by the END of each iteration, so
+        #   every later day's profit calculation is checked against the
+        #   best possible buy day available before it.
+        # - Checking profit BEFORE updating minPrice guarantees a day is
+        #   never used as its own buy-and-sell pair (profit would be 0
+        #   anyway in that case, so this ordering costs nothing but
+        #   keeps the logic conceptually clean).
+        # - maxProfit only grows when a strictly better profit appears,
+        #   correctly defaulting to 0 if prices never rise (doing
+        #   nothing is always a valid, zero-profit option).
 
-        return maxPro
+        # E — Evaluate
+        # ----------------
+        # Time:  O(n)  — single pass through prices, one comparison and
+        #        one update per element
+        # Space: O(1)  — only two scalar variables (maxProfit, minPrice),
+        #        no auxiliary arrays or pointer bookkeeping needed
