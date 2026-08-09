@@ -1,5 +1,3 @@
-from typing import Dict
-
 class Solution:
     def isAnagram(self, s: str, t: str) -> bool:
         """
@@ -7,53 +5,53 @@ class Solution:
         ----------------
         Determine whether s and t are anagrams:
         same multiset of characters (same letters with same counts), order irrelevant.
-        Constraint assumed: both strings contain only lowercase English letters (a-z).
 
         M — Match
         ----------------
-        Pattern: Arrays & Hashing (frequency counting), optimized with a fixed-size array.
-        Tool: Single array of size 26 acting as a combined counter for both strings.
+        Pattern: Arrays & Hashing (frequency counting).
+        Tool: Two hash maps (dicts) mapping char -> count, built in a
+        single pass over both strings simultaneously.
 
         P — Plan
         ----------------
-        1) If lengths differ, return False.
-        2) Walk both strings by index, incrementing the count for s[i] and
-           decrementing the count for t[i] in the same array slot.
-        3) Scan the array — if any slot is nonzero, the strings aren't anagrams.
-           If every slot is 0, they are.
+        1) If lengths differ, return False immediately (can't be
+           anagrams if they don't even have the same number of characters).
+        2) Build countS and countT in one pass, using each character
+           itself as the dictionary key.
+        3) Return whether the two dicts are equal.
         """
         # I — Implement
         # ----------------
-        # 1) Early length check (O(1))
         if len(s) != len(t):
             return False
 
-        # 2) Single array tracks net frequency difference per letter
-        count = [0] * 26
-
-        # One pass through both strings by index (O(n))
+        countS, countT = {}, {}
         for i in range(len(s)):
-            # Increment for s's character
-            count[ord(s[i]) - ord('a')] += 1
-            # Decrement for t's character
-            count[ord(t[i]) - ord('a')] -= 1
+            # Increment count for s[i] — .get(s[i], 0) looks up the SAME
+            # key we're about to write to, so repeats correctly accumulate
+            countS[s[i]] = 1 + countS.get(s[i], 0)
+            countT[t[i]] = 1 + countT.get(t[i], 0)
 
-        # 3) Check that every letter's net count balanced out to zero
-        for n in count:
-            if n != 0:
-                return False
-        return True
+        return countS == countT
 
         # R — Review
         # ----------------
         # Correctness reasoning:
-        # - Each letter has one slot; +1 for appearing in s, -1 for appearing in t.
-        # - If s and t are anagrams, every letter's contributions cancel to 0.
-        # - If any letter's count is nonzero, s and t disagree on that letter's frequency.
-        # - Length mismatch short-circuits obvious non-anagrams before the scan.
+        # - For each character, its count in s must equal its count in t.
+        # - Dict equality checks exactly that — Python compares dicts by
+        #   key-value pairs, not by insertion order, so {'a':2,'b':1} ==
+        #   {'b':1,'a':2} correctly evaluates to True.
+        # - Using s[i]/t[i] (the character itself) as the key, consistently
+        #   for both the read (.get) and the write, guarantees every
+        #   repeat of a character finds and increments its own existing
+        #   count rather than colliding with an unrelated key or never
+        #   being found at all.
+        # - Length mismatch short-circuits obvious non-anagrams before
+        #   any counting work happens.
 
         # E — Evaluate
         # ----------------
-        # Time:  O(n)  (single pass to build counts + O(26) pass to verify, n = len(s))
-        # Space: O(1)  (fixed 26-element array, independent of input size)
-        
+        # Time:  O(n)  — single pass building both dicts, O(1) dict
+        #        equality check afterward (bounded by alphabet size)
+        # Space: O(1)  — at most 26 lowercase letters in each dict,
+        #        independent of input length n
