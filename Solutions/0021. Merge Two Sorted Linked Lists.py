@@ -6,83 +6,71 @@
 
 
 class Solution:
-    def mergeTwoLists(self, list1: ListNode, list2: ListNode) -> ListNode:
+    def mergeTwoLists(self, list1: Optional[ListNode], list2: Optional[ListNode]) -> Optional[ListNode]:
+        """
+        U — Understand
+        ----------------
+        Given two SORTED linked lists, merge them into one sorted list by
+        rewiring existing nodes (not creating new ones). Return the head
+        of the merged list.
 
-        # U — Understand
-        # Input: two sorted linked lists (list1 and list2)
-        # Output: one merged sorted linked list
-        # Example:
-        # list1: 1 → 3 → 5
-        # list2: 2 → 4 → 6
-        # result: 1 → 2 → 3 → 4 → 5 → 6
+        M — Match
+        ----------------
+        Pattern: Two-pointer merge (the merge step of merge sort), plus
+        the DUMMY NODE technique to avoid special-casing "what's the
+        first node of the result."
 
-
-        # M — Match Pattern
-        # Pattern: Two-pointer merge
-        # Same idea used in the merge step of Merge Sort.
-        # Always attach the smaller node to the merged list.
-
-
-        # P — Plan
-        # 1. Create a dummy node to simplify list construction.
-        # 2. Use a pointer (node) to build the result list.
-        # 3. Compare the current nodes of list1 and list2.
-        # 4. Attach the smaller node to node.next.
-        # 5. Move the pointer forward.
-        # 6. Continue until one list is empty.
-        # 7. Attach the remaining nodes from the non-empty list.
-
-
+        P — Plan
+        ----------------
+        1) Create a dummy node, and a `tail` pointer starting at dummy —
+           tail always points to the LAST node currently attached to
+           the result.
+        2) While both list1 and list2 still have nodes:
+           - Compare their current values. Attach whichever is smaller
+             to tail.next, then advance THAT list's pointer forward.
+           - Always advance tail to the node just attached.
+        3) Once one list is exhausted, the other list's REMAINING nodes
+           are already sorted among themselves — just attach the whole
+           remaining chain directly, no need to walk it node by node.
+        4) Return dummy.next (skipping the placeholder itself).
+        """
         # I — Implement
+        # ----------------
+        dummy = ListNode()
+        tail = dummy
 
-        # dummy node helps avoid special case for first node
-        dummy = node = ListNode()
-
-        # traverse both lists
         while list1 and list2:
-
-            # compare node values
-            if list1.val < list2.val:
-
-                # attach list1 node
-                node.next = list1
-
-                # move list1 forward
+            if list1.val <= list2.val:
+                tail.next = list1
                 list1 = list1.next
-
             else:
-
-                # attach list2 node
-                node.next = list2
-
-                # move list2 forward
+                tail.next = list2
                 list2 = list2.next
+            tail = tail.next
 
-            # move node forward in merged list
-            node = node.next
+        # One list may still have remaining nodes — attach the whole tail
+        tail.next = list1 if list1 else list2
 
-
-        # attach remaining nodes
-        # only one of these will be non-empty
-        node.next = list1 or list2
-
+        return dummy.next
 
         # R — Review
-        # Check:
-        # - All nodes connected
-        # - Order preserved
-        # - Dummy node skipped in final result
-
+        # ----------------
+        # Correctness reasoning:
+        # - Both lists are individually sorted, so at every step, the
+        #   smaller of the two CURRENT nodes is guaranteed to be the
+        #   smallest unattached value across BOTH lists combined —
+        #   nothing smaller could still be hiding further down either list.
+        # - dummy sidesteps the "no previous node exists yet" problem for
+        #   the very first attachment — tail always has somewhere valid
+        #   to point from, even before any real merging has happened.
+        # - Once one list runs out, the other's remaining nodes are
+        #   already in sorted order relative to each other AND are all
+        #   >= everything already attached, so splicing the whole
+        #   remainder in one line is safe and correct.
 
         # E — Evaluate
-        # Time Complexity: O(n + m)
-        #   n = length of list1
-        #   m = length of list2
-        #
-        # Space Complexity: O(1)
-        #   No extra data structures used
-        #   Only pointer manipulation
-
-
-        # return the real head (skip dummy node)
-        return dummy.next
+        # ----------------
+        # Time:  O(n + m) — n, m = lengths of list1, list2; each node
+        #        from both lists is visited and attached exactly once
+        # Space: O(1) — no new nodes created, only a dummy placeholder
+        #        and pointer variables; existing nodes are rewired
