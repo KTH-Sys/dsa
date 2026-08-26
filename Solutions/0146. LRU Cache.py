@@ -50,12 +50,21 @@ class LRUCache:
 
     def remove(self, node):
         # Yank a box out: make its two neighbors point at each other
+        '''
+        L     Node      R
+        prev           nxt
+        '''
         prev, nxt = node.prev, node.next
         prev.next = nxt
         nxt.prev = prev
 
     def insert(self, node):
         # Add a box right before `right` (the most-recently-used end)
+        '''
+        L          R
+            Node
+            prev   next
+        '''
         prev, nxt = self.right.prev, self.right
         prev.next = node
         nxt.prev = node
