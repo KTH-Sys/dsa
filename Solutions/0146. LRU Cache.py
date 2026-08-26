@@ -62,8 +62,8 @@ class LRUCache:
         # Add a box right before `right` (the most-recently-used end)
         '''
         L          R
-            Node
-            prev   next
+             Node
+        prev     next
         '''
         prev, nxt = self.right.prev, self.right
         prev.next = node
